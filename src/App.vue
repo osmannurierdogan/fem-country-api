@@ -1,43 +1,39 @@
 <script setup>
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-/* import * as dotenv from "dotenv";
-dotenv.config(); */
-//const BASE_URL = process.env.BASE_URL || "https://restcountries.com/v3.1/all";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, provide } from "vue";
 import CountryList from "@/components/CountryList.vue";
 import SearchCountry from "@/components/SearchCountry.vue";
 import FilterList from "./components/FilterList.vue";
+import axios from "axios";
 const BASE_URL = "https://restcountries.com/v3.1";
-const countryList = ref([]);
+const countries = ref([]);
+const capitals = ref([]);
 const fetchData = async () => {
-  await fetch(`${BASE_URL}/all`)
-    .then((response) => response.json())
-    .then((data) => {
-      countryList.value = data;
-      console.log("data :>> ", data);
-      console.log("countryList :>> ", countryList.value);
+  axios.get(`${BASE_URL}/all`).then((response) => {
+    // console.log("response :>> ", response);
+    countries.value = response.data;
+    response.data.forEach((item, index) => {
+      capitals.value.push({ capital: item.capital, id: index });
     });
+  });
 };
 onMounted(() => {
   fetchData();
 });
+provide("countries", countries);
+provide("capitals", capitals);
 </script>
 <template lang="pug">
 main.container
   div.app
-    h3 Osman
-    h3 {{ BASE_URL }}
     SearchCountry
     FilterList
     CountryList
     div.flex
-      div.item(v-for="country in countryList" :key="country")
-        pre {{ country }}
+      div.item(v-for="(country, index) in countries", :key="country.idd")
+        h6 {{ String(capitals[index].capital) }}
         h5 {{ country.name.common }}
         h5 {{ country.population }}
         h5 {{ country.region }}
-        pre {{ country.capital || "="}}
         img(:src="country.flags.svg", width="30")
 </template>
 
@@ -54,4 +50,3 @@ main.container
   border: 1px solid red;
 }
 </style>
-
